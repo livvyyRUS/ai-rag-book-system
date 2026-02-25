@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from .models import SimilaritySearchAnswerModel, SimilaritySearchAnswersModel
 from app.rag import RAG
 
