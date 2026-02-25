@@ -1,0 +1,23 @@
+[project]
+name = "rag-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "aiofiles>=25.1.0",
+    "fastapi>=0.129.2",
+    "langchain>=1.2.10",
+    "langchain-chroma>=1.1.0",
+    "langchain-community>=0.4.1",
+    "langchain-ollama>=1.0.1",
+    "langchain-text-splitters>=1.1.1",
+    "miniopy-async>=1.23.4",
+    "pyinstrument>=5.1.2",
+    "pymupdf>=1.27.1",
+    "pypdf>=6.7.2",
+    "python-docx>=1.2.0",
+    "sentence-transformers>=5.2.3",
+    "unstructured[pdf]>=0.20.8",
+    "uvicorn>=0.41.0",
+]

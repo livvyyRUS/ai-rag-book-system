@@ -17,6 +17,7 @@ services:
       retries: 5
   minio:
     image: minio/minio:latest
+    container_name: minio
     command: server --console-address ":9001" /data
     ports:
       - "9000:9000"
@@ -31,4 +32,16 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-      
+  rag_service:
+    build: rag_service
+    ports:
+      - "8000:8000"
+    environment:
+      MINIO_USER: ${MINIO_USER}
+      MINIO_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_HOST: ${MINIO_HOST}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/rag"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
