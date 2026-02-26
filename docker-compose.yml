@@ -40,6 +40,9 @@ services:
       MINIO_USER: ${MINIO_USER}
       MINIO_PASSWORD: ${MINIO_PASSWORD}
       MINIO_HOST: ${MINIO_HOST}
+      HF_HOME: /hf_cache   # или TRANSFORMERS_CACHE: /hf_cache
+    volumes:
+      - ./hf_cache:/hf_cache   # монтируем папку с хоста в контейнер
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/rag"]
       interval: 30s

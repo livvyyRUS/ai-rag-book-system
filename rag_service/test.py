@@ -2,7 +2,7 @@ import httpx
 
 # response = httpx.post("http://localhost:8000/generate_chroma_db?user_id=test", timeout=1000)
 query = input()
-response = httpx.get(f"http://localhost:8000/similarity_search_with_scores?user_id=test&query={query}", timeout=1000)
+response = httpx.get(f"http://localhost:8000/similarity_search_mmr?user_id=test&query={query}", timeout=1000)
 
 print(response.text)
 # import asyncio

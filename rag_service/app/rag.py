@@ -57,25 +57,30 @@ class RAG:
         return [doc for sublist in results for doc in sublist]
 
     async def text_split(self, documents: List[Document]) -> List[Document]:
-        """Разбивает документы на чанки."""
+        """Разбивает документы на чанки в фоновом потоке."""
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
             length_function=len,
         )
-        return text_splitter.split_documents(documents)
+        # split_documents может быть вычислительно затратным → выносим в поток
+        return await asyncio.to_thread(text_splitter.split_documents, documents)
 
     async def generate_vectors(self, chunks: List[Document]) -> None:
-        """Создаёт векторное хранилище из чанков и сохраняет на диск."""
+        """Создаёт векторное хранилище из чанков и сохраняет на диск (в потоке)."""
         print("Создание векторной базы данных...")
-        vectordb = Chroma.from_documents(
-            documents=chunks,
-            embedding=self.embeddings,
-            persist_directory=str(self.chromadb_directory),
-            collection_metadata={"hnsw:space": "cosine"},
-        )
-        # persist() необязателен в новых версиях Chroma, но оставлен для совместимости
-        vectordb.persist()
+
+        def _create_db():
+            vectordb = Chroma.from_documents(
+                documents=chunks,
+                embedding=self.embeddings,
+                persist_directory=str(self.chromadb_directory),
+                collection_metadata={"hnsw:space": "cosine"},
+            )
+            vectordb.persist()  # persist может быть синхронным
+            return vectordb
+
+        await asyncio.to_thread(_create_db)
         print("Векторная база создана и сохранена.")
 
     async def generate_chromadb(self) -> None:
