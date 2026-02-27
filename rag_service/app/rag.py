@@ -10,6 +10,14 @@ from langchain_community.vectorstores import Chroma
 from .files import Files
 
 
+embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+embeddings = HuggingFaceEmbeddings(
+    model_name=embedding_model,
+    model_kwargs={"device": "cpu"},  # или 'cuda' при наличии GPU
+    encode_kwargs={"normalize_embeddings": True},
+)
+
+
 class RAG:
     """
     Класс для построения RAG-системы: загрузка файлов, разделение на чанки,
@@ -22,14 +30,12 @@ class RAG:
         directory: Path = Path("rag_data"),
         chunk_size: int = 1000,
         chunk_overlap: int = 200,
-        embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     ):
         """
         :param user_id: идентификатор пользователя
         :param directory: корневая директория для хранения данных
         :param chunk_size: размер чанка при разбиении текста
         :param chunk_overlap: перекрытие чанков
-        :param embedding_model: название модели эмбеддингов из HuggingFace
         """
         self.user_id = user_id
         self.files = Files(self.user_id)
@@ -37,11 +43,6 @@ class RAG:
         self.chromadb_directory = directory / self.user_id
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=embedding_model,
-            model_kwargs={"device": "cpu"},  # или 'cuda' при наличии GPU
-            encode_kwargs={"normalize_embeddings": True},
-        )
 
     async def load_file(self, file_path: Path) -> List[Document]:
         """Загружает один PDF-файл в фоновом потоке."""
@@ -73,7 +74,7 @@ class RAG:
         def _create_db():
             vectordb = Chroma.from_documents(
                 documents=chunks,
-                embedding=self.embeddings,
+                embedding=embeddings,
                 persist_directory=str(self.chromadb_directory),
                 collection_metadata={"hnsw:space": "cosine"},
             )
@@ -94,7 +95,7 @@ class RAG:
         return await asyncio.to_thread(
             Chroma,
             persist_directory=str(self.chromadb_directory),
-            embedding_function=self.embeddings,
+            embedding_function=embeddings,
         )
 
     async def similarity_search(
