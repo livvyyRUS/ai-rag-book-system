@@ -218,7 +218,10 @@ __marimo__/
 pg_data/
 minio_data/
 hf_cache/
+ollama_models/
+
 
 */rag_data/*
 */cache/*
 */hf_cache/*
+*/ollama_models/*

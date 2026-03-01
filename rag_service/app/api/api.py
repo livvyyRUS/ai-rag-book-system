@@ -6,6 +6,8 @@ from .models import (
     SimilaritySearchWithScoreAnswersModel
 )
 from app.rag import RAG
+from app.ai.agents.rag_agent import RAGAgent
+from app.ai.agents.talk_agent import TalkAgent
 
 router = APIRouter()
 
@@ -110,3 +112,23 @@ async def similarity_search_mmr(
         for doc in documents
     ]
     return SimilaritySearchAnswersModel(answers=answers)
+
+
+@router.get("/chat")
+async def chat(
+    user_id: str, 
+    query: str
+):
+    if user_id is None:
+        raise HTTPException(400, "user_id is not found")
+    if query is None:
+        raise HTTPException(400, "query is not found")
+    rag_agent = RAGAgent(user_id=user_id)
+    talk_agent = TalkAgent(user_id=user_id)
+    rag_answer = await rag_agent.message(query=query)
+    answer = await talk_agent.message(rag_answer)
+    return {
+        "status": "ok",
+        "text": answer
+    }
+    

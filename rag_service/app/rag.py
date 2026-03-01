@@ -1,4 +1,5 @@
 import asyncio
+import os
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -10,7 +11,7 @@ from langchain_community.vectorstores import Chroma
 from .files import Files
 
 
-embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+embedding_model: str = os.environ.get("HF_EMBEDDINGS_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 embeddings = HuggingFaceEmbeddings(
     model_name=embedding_model,
     model_kwargs={"device": "cpu"},  # или 'cuda' при наличии GPU
@@ -121,6 +122,7 @@ class RAG:
         docs = await asyncio.to_thread(
             vectordb.similarity_search, query, k=k, filter=filter
         )
+        print(docs)
         return docs
 
     async def similarity_search_with_scores(
@@ -143,6 +145,7 @@ class RAG:
         docs_with_scores = await asyncio.to_thread(
             vectordb.similarity_search_with_score, query, k=k, filter=filter
         )
+        print(docs_with_scores)
         return docs_with_scores
 
     async def similarity_search_with_mmr(
@@ -175,6 +178,7 @@ class RAG:
             lambda_mult=lambda_mult,
             filter=filter,
         )
+        print(docs)
         return docs
 
     async def close(self):
