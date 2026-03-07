@@ -88,3 +88,16 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  telegram_bot:
+    build: telegram_bot
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      TELEGRAM_API_TOKEN: ${TELEGRAM_API_TOKEN}

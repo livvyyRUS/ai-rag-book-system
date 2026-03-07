@@ -117,7 +117,8 @@ async def similarity_search_mmr(
 @router.get("/chat")
 async def chat(
     user_id: str, 
-    query: str
+    query: str,
+    jwt_token: 
 ):
     if user_id is None:
         raise HTTPException(400, "user_id is not found")
