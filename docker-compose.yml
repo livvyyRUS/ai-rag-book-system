@@ -15,6 +15,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -32,6 +33,7 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
   rag_service:
     build: rag_service
     ports:
@@ -40,8 +42,63 @@ services:
       MINIO_USER: ${MINIO_USER}
       MINIO_PASSWORD: ${MINIO_PASSWORD}
       MINIO_HOST: ${MINIO_HOST}
+      HF_HOME: /hf_cache
+      HF_EMBEDDINGS_MODEL: ${HF_EMBEDDINGS_MODEL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    volumes:
+      - ./hf_cache:/hf_cache
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/rag"]
       interval: 30s
       timeout: 20s
       retries: 3
+    depends_on:
+      - minio
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    environment:
+      OLLAMA_MODEL: ${OLLAMA_MODEL}   # модель, например llama3.2
+    volumes:
+      - ./ollama_models:/root/.ollama   # кэш моделей на хосте
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        ollama serve &
+        SERVER_PID=$!
+        echo 'Waiting for Ollama server to be ready...'
+        while ! ollama list >/dev/null 2>&1; do
+          sleep 1
+        done
+        echo 'Ollama server is ready.'
+        if [ -n "$OLLAMA_MODEL" ]; then
+          echo "Pulling model $OLLAMA_MODEL"
+          ollama pull "$OLLAMA_MODEL"
+          echo 'Model pull completed.'
+        else
+          echo 'No OLLAMA_MODEL specified, skipping pull.'
+        fi
+        wait $SERVER_PID
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  telegram_bot:
+    build: telegram_bot
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      TELEGRAM_API_TOKEN: ${TELEGRAM_API_TOKEN}

@@ -3,34 +3,59 @@ from .models import (
     SimilaritySearchAnswerModel,
     SimilaritySearchAnswersModel,
     SimilaritySearchWithScoreAnswerModel,
-    SimilaritySearchWithScoreAnswersModel
+    SimilaritySearchWithScoreAnswersModel,
+    StatusModel,
+    StatusWithAnswerModel,
 )
 from app.rag import RAG
+from app.ai.agents.rag_agent import RAGAgent
+from app.ai.agents.talk_agent import TalkAgent
+
+from app.jwt import decode_jwt
+from jwt import DecodeError, ExpiredSignatureError
 
 router = APIRouter()
 
 
 @router.post("/generate_chroma_db")
-async def generate_chroma_db(user_id: str = None):
+async def generate_chroma_db(user_id: str = None, jwt_token: str = None) -> StatusModel:
     if user_id is None:
         raise HTTPException(400, "user_id is not found")
+    try:
+        payload = decode_jwt(jwt_token=jwt_token)
+        if payload.user_id != user_id:
+            raise HTTPException(400, "Wrong token")
+    except DecodeError as e:
+        raise HTTPException(400, "Wrong token")
+    except ExpiredSignatureError as e:
+        raise HTTPException(400, "Token expired")
+    
     rag = RAG(user_id=user_id)
     await rag.generate_chromadb()
     await rag.close()
-    return {"status": "ok"}
+    return StatusModel(status="ok")
 
 
 @router.get("/similarity_search")
 async def similarity_search(
     user_id: str = None,
     query: str = None,
-    k: int = Query(3, ge=1, le=20)
-):
+    k: int = Query(3, ge=1, le=20),
+    jwt_token: str = None,
+) -> SimilaritySearchAnswersModel:
     if user_id is None:
         raise HTTPException(400, "user_id is not found")
     if query is None:
         raise HTTPException(400, "query is not found")
-    
+    try:
+        payload = decode_jwt(jwt_token=jwt_token)
+        if payload.user_id != user_id:
+            raise HTTPException(400, "Wrong token")
+    except DecodeError as e:
+        raise HTTPException(400, "Wrong token")
+    except ExpiredSignatureError as e:
+        raise HTTPException(400, "Token expired")
+
     rag = RAG(user_id=user_id)
     try:
         documents = await rag.similarity_search(query=query, k=k)
@@ -38,7 +63,7 @@ async def similarity_search(
         raise HTTPException(404, str(e))
     finally:
         await rag.close()
-    
+
     answers = [
         SimilaritySearchAnswerModel(
             text=doc.page_content,
@@ -54,13 +79,22 @@ async def similarity_search(
 async def similarity_search_with_scores(
     user_id: str = None,
     query: str = None,
-    k: int = Query(3, ge=1, le=20)
-):
+    k: int = Query(3, ge=1, le=20),
+    jwt_token: str = None,
+) -> SimilaritySearchWithScoreAnswersModel:
     if user_id is None:
         raise HTTPException(400, "user_id is not found")
     if query is None:
         raise HTTPException(400, "query is not found")
-    
+    try:
+        payload = decode_jwt(jwt_token=jwt_token)
+        if payload.user_id != user_id:
+            raise HTTPException(400, "Wrong token")
+    except DecodeError as e:
+        raise HTTPException(400, "Wrong token")
+    except ExpiredSignatureError as e:
+        raise HTTPException(400, "Token expired")
+
     rag = RAG(user_id=user_id)
     try:
         docs_with_scores = await rag.similarity_search_with_scores(query=query, k=k)
@@ -68,13 +102,13 @@ async def similarity_search_with_scores(
         raise HTTPException(404, str(e))
     finally:
         await rag.close()
-    
+
     answers = [
         SimilaritySearchWithScoreAnswerModel(
             text=doc.page_content,
             title=doc.metadata.get("title"),
             page=int(doc.metadata.get("page", "0")) + 1,
-            score=score
+            score=score,
         )
         for doc, score in docs_with_scores
     ]
@@ -86,21 +120,32 @@ async def similarity_search_mmr(
     user_id: str = None,
     query: str = None,
     k: int = Query(3, ge=1, le=20),
-    lambda_mult: float = Query(0.5, ge=0.0, le=1.0)
-):
+    lambda_mult: float = Query(0.5, ge=0.0, le=1.0),
+    jwt_token: str = None,
+) -> SimilaritySearchAnswersModel:
     if user_id is None:
         raise HTTPException(400, "user_id is not found")
     if query is None:
         raise HTTPException(400, "query is not found")
-    
+    try:
+        payload = decode_jwt(jwt_token=jwt_token)
+        if payload.user_id != user_id:
+            raise HTTPException(400, "Wrong token")
+    except DecodeError as e:
+        raise HTTPException(400, "Wrong token")
+    except ExpiredSignatureError as e:
+        raise HTTPException(400, "Token expired")
+
     rag = RAG(user_id=user_id)
     try:
-        documents = await rag.similarity_search_with_mmr(query=query, k=k, lambda_mult=lambda_mult)
+        documents = await rag.similarity_search_with_mmr(
+            query=query, k=k, lambda_mult=lambda_mult
+        )
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     finally:
         await rag.close()
-    
+
     answers = [
         SimilaritySearchAnswerModel(
             text=doc.page_content,
@@ -110,3 +155,25 @@ async def similarity_search_mmr(
         for doc in documents
     ]
     return SimilaritySearchAnswersModel(answers=answers)
+
+
+@router.get("/chat")
+async def chat(user_id: str, query: str, jwt_token: str) -> StatusWithAnswerModel:
+    if user_id is None:
+        raise HTTPException(400, "user_id is not found")
+    if query is None:
+        raise HTTPException(400, "query is not found")
+    try:
+        payload = decode_jwt(jwt_token=jwt_token)
+        if payload.user_id != user_id:
+            raise HTTPException(400, "Wrong token")
+    except DecodeError as e:
+        raise HTTPException(400, "Wrong token")
+    except ExpiredSignatureError as e:
+        raise HTTPException(400, "Token expired")
+
+    rag_agent = RAGAgent(user_id=user_id)
+    talk_agent = TalkAgent(user_id=user_id)
+    rag_answer = await rag_agent.message(query=query)
+    answer = await talk_agent.message(rag_answer)
+    return StatusWithAnswerModel(status="ok", text=answer)

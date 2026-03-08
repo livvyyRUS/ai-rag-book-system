@@ -1,4 +1,5 @@
 import asyncio
+import os
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -8,6 +9,14 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Chroma
 from .files import Files
+
+
+embedding_model: str = os.environ.get("HF_EMBEDDINGS_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+embeddings = HuggingFaceEmbeddings(
+    model_name=embedding_model,
+    model_kwargs={"device": "cpu"},  # или 'cuda' при наличии GPU
+    encode_kwargs={"normalize_embeddings": True},
+)
 
 
 class RAG:
@@ -22,14 +31,12 @@ class RAG:
         directory: Path = Path("rag_data"),
         chunk_size: int = 1000,
         chunk_overlap: int = 200,
-        embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     ):
         """
         :param user_id: идентификатор пользователя
         :param directory: корневая директория для хранения данных
         :param chunk_size: размер чанка при разбиении текста
         :param chunk_overlap: перекрытие чанков
-        :param embedding_model: название модели эмбеддингов из HuggingFace
         """
         self.user_id = user_id
         self.files = Files(self.user_id)
@@ -37,11 +44,6 @@ class RAG:
         self.chromadb_directory = directory / self.user_id
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=embedding_model,
-            model_kwargs={"device": "cpu"},  # или 'cuda' при наличии GPU
-            encode_kwargs={"normalize_embeddings": True},
-        )
 
     async def load_file(self, file_path: Path) -> List[Document]:
         """Загружает один PDF-файл в фоновом потоке."""
@@ -57,25 +59,30 @@ class RAG:
         return [doc for sublist in results for doc in sublist]
 
     async def text_split(self, documents: List[Document]) -> List[Document]:
-        """Разбивает документы на чанки."""
+        """Разбивает документы на чанки в фоновом потоке."""
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
             length_function=len,
         )
-        return text_splitter.split_documents(documents)
+        # split_documents может быть вычислительно затратным → выносим в поток
+        return await asyncio.to_thread(text_splitter.split_documents, documents)
 
     async def generate_vectors(self, chunks: List[Document]) -> None:
-        """Создаёт векторное хранилище из чанков и сохраняет на диск."""
+        """Создаёт векторное хранилище из чанков и сохраняет на диск (в потоке)."""
         print("Создание векторной базы данных...")
-        vectordb = Chroma.from_documents(
-            documents=chunks,
-            embedding=self.embeddings,
-            persist_directory=str(self.chromadb_directory),
-            collection_metadata={"hnsw:space": "cosine"},
-        )
-        # persist() необязателен в новых версиях Chroma, но оставлен для совместимости
-        vectordb.persist()
+
+        def _create_db():
+            vectordb = Chroma.from_documents(
+                documents=chunks,
+                embedding=embeddings,
+                persist_directory=str(self.chromadb_directory),
+                collection_metadata={"hnsw:space": "cosine"},
+            )
+            vectordb.persist()  # persist может быть синхронным
+            return vectordb
+
+        await asyncio.to_thread(_create_db)
         print("Векторная база создана и сохранена.")
 
     async def generate_chromadb(self) -> None:
@@ -89,7 +96,7 @@ class RAG:
         return await asyncio.to_thread(
             Chroma,
             persist_directory=str(self.chromadb_directory),
-            embedding_function=self.embeddings,
+            embedding_function=embeddings,
         )
 
     async def similarity_search(
@@ -115,6 +122,7 @@ class RAG:
         docs = await asyncio.to_thread(
             vectordb.similarity_search, query, k=k, filter=filter
         )
+        print(docs)
         return docs
 
     async def similarity_search_with_scores(
@@ -137,6 +145,7 @@ class RAG:
         docs_with_scores = await asyncio.to_thread(
             vectordb.similarity_search_with_score, query, k=k, filter=filter
         )
+        print(docs_with_scores)
         return docs_with_scores
 
     async def similarity_search_with_mmr(
@@ -169,6 +178,7 @@ class RAG:
             lambda_mult=lambda_mult,
             filter=filter,
         )
+        print(docs)
         return docs
 
     async def close(self):

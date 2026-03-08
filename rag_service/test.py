@@ -1,22 +1,43 @@
-import httpx
+# import httpx
 
 # response = httpx.post("http://localhost:8000/generate_chroma_db?user_id=test", timeout=1000)
-query = input()
-response = httpx.get(f"http://localhost:8000/similarity_search_with_scores?user_id=test&query={query}", timeout=1000)
+# print(response.text)
+# # query = input()
+# # response = httpx.get(f"http://localhost:8000/similarity_search_mmr?user_id=test&query={query}", timeout=1000)
 
-print(response.text)
-# import asyncio
+# # print(response.text)
+# # import asyncio
 
-# from app.rag import RAG
+# # from app.rag import RAG
 
-# rag = RAG("test")
-# async def main():
-#     documents = await rag.load_files()
-#     print(f"Загружено документов: {len(documents)}")
-#     if documents:
-#         print("Первый документ:", documents[0].page_content[:200])
-#         print("Метаданные:", documents[0].metadata)
-#     chunks = await rag.text_split(documents)
-#     print(f"Получено чанков: {len(chunks)}")
+# # rag = RAG("test")
+# # async def main():
+# #     documents = await rag.load_files()
+# #     print(f"Загружено документов: {len(documents)}")
+# #     if documents:
+# #         print("Первый документ:", documents[0].page_content[:200])
+# #         print("Метаданные:", documents[0].metadata)
+# #     chunks = await rag.text_split(documents)
+# #     print(f"Получено чанков: {len(chunks)}")
     
-# asyncio.run(main())
+# # asyncio.run(main())
+
+# # import asyncio
+# # from app.ai.tools.rag_tool import create_rag_tool
+
+# # tool = create_rag_tool("test")
+# # async def main():
+# #     print(await tool.ainvoke({"query": "Ростов увидал отвозимых пленных и поскакал за ними, чтобы посмотреть своего француза с дырочкой на подбородке."}))
+    
+# # asyncio.run(main())
+
+# print("""Пьер — один из персонажей романа, описанных в текстах. В одном из фрагментов он описывается как человек, который испытывает странную антипатию к кому-то, хотя ранее ему очень нравился. В глазах Пьера он кажется большим барином — слепым, смешным, умным чудаком, который ничего не делает, но никому не вредит, и является славным и добрым человеком.\n\nВ другом фрагменте Пьер наблюдает за тем, как человек разувается, и заинтересован в его действиях. Он аккуратно разматывает бечевки и переходит к другой ноге, что показывает, что Пьер внимателен и может проявлять интерес к поведению других людей.\n\nТаким образом, Пьер — это человек с доброй и умной натурой, склонный к наблюдению и чувствительный к деталям, хотя и может казаться слепым или неуверенным в себе.\n\n**Использованные цитаты:**\n- Книга: Неизвестно, Местоположение: стр. 554  \n  «Такая странная антипатия, — думал Пьер, — а прежде он мне даже очень нравился». В глазах света Пьер был большой барин, несколько слепой и смешной муж знаменитой жены, умный чудак, ничего не делающий, но и никому не вредящий, славный и добрый малый.\n\n- Книга: Неизвестно, Местоположение: стр. 1194  \n  Приглядевшись в темноте, Пьер понял, что человек этот разувался. И то, каким образом он это делал, заинтересовало Пьера. Размотав бечевки, которыми была завязана одна нога, он аккуратно свернул бечевки и тотчас принялся за другую ногу, взглядывая на Пьера.""")
+
+
+from app.jwt import encode_jwt, JWTPayload, decode_jwt
+
+string = encode_jwt(JWTPayload(user_id="test"))
+
+print(string)
+
+print(decode_jwt(string))
