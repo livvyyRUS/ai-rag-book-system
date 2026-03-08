@@ -44,6 +44,7 @@ services:
       MINIO_HOST: ${MINIO_HOST}
       HF_HOME: /hf_cache
       HF_EMBEDDINGS_MODEL: ${HF_EMBEDDINGS_MODEL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     volumes:
       - ./hf_cache:/hf_cache
     healthcheck:

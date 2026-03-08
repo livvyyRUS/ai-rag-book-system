@@ -14,6 +14,7 @@ dependencies = [
     "langchain-text-splitters>=1.1.1",
     "miniopy-async>=1.23.4",
     "pyinstrument>=5.1.2",
+    "pyjwt>=2.11.0",
     "pymupdf>=1.27.1",
     "pypdf>=6.7.2",
     "python-docx>=1.2.0",

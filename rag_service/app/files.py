@@ -4,7 +4,7 @@ import uuid
 import aiofiles
 from pathlib import Path
 from typing import List, Optional
-from miniopy_async import Minio
+from miniopy_async.api import Minio
 
 
 class Files:
@@ -154,16 +154,5 @@ if __name__ == "__main__":
             # Загрузка отдельных файлов
             await files.upload_file("example.txt")
             await files.upload_file("data.csv", "custom_name.csv")
-
-            # Загрузка ChromaDB
-            await files.upload_chroma_db("chroma_backup.zip")
-
-            # Скачивание всех файлов, кроме ChromaDB
-            downloaded = await files.download_all_other_files()
-            print(f"Скачаны файлы: {downloaded}")
-
-            # Скачивание ChromaDB отдельно
-            chroma_path = await files.download_chroma_db()
-            print(f"ChromaDB скачана в: {chroma_path}")
 
     asyncio.run(main())

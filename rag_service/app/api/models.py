@@ -14,3 +14,12 @@ class SimilaritySearchWithScoreAnswerModel(SimilaritySearchAnswerModel):
 
 class SimilaritySearchWithScoreAnswersModel(BaseModel):
     answers: List[SimilaritySearchWithScoreAnswerModel]
+    
+    
+class StatusModel(BaseModel):
+    status: str
+    
+    
+class StatusWithAnswerModel(BaseModel):
+    status: str
+    text: str
