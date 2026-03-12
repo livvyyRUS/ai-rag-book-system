@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - ./pg_data:/var/lib/postgresql/data
+      - ./pg_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     healthcheck:
@@ -102,3 +102,11 @@ services:
     environment:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       TELEGRAM_API_TOKEN: ${TELEGRAM_API_TOKEN}
+  streamlit_service:
+    build: streamlit_service
+    ports:
+      - "8501:8501"
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@host.docker.internal:5432/${POSTGRES_DB}
+    
