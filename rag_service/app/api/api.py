@@ -174,6 +174,15 @@ async def chat(user_id: str, query: str, jwt_token: str) -> StatusWithAnswerMode
 
     rag_agent = RAGAgent(user_id=user_id)
     talk_agent = TalkAgent(user_id=user_id)
-    rag_answer = await rag_agent.message(query=query)
-    answer = await talk_agent.message(rag_answer)
+    
+    # RAG-агент возвращает dict с query, found, fragments
+    rag_result = await rag_agent.message(query=query)
+    
+    # Передаём структурированные данные в Talk-агент
+    answer = await talk_agent.message(
+        query=query,
+        found=rag_result.get("found", False),
+        fragments=rag_result.get("fragments", [])
+    )
+    
     return StatusWithAnswerModel(status="ok", text=answer)
