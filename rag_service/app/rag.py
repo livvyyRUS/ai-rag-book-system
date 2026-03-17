@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.document_loaders import PyMuPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Chroma
@@ -46,14 +46,31 @@ class RAG:
         self.chunk_overlap = chunk_overlap
 
     async def load_file(self, file_path: Path) -> List[Document]:
-        """Загружает один PDF-файл в фоновом потоке."""
-        loader = PyMuPDFLoader(str(file_path))
-        return await asyncio.to_thread(loader.load)
+        """Загружает один файл (.txt или .pdf) в фоновом потоке."""
+        file_ext = file_path.suffix.lower()
+        
+        if file_ext == ".txt":
+            loader = TextLoader(str(file_path), encoding="utf-8")
+        elif file_ext == ".pdf":
+            loader = PyMuPDFLoader(str(file_path))
+        else:
+            # По умолчанию пытаемся загрузить как текст
+            loader = TextLoader(str(file_path), encoding="utf-8")
+        
+        documents = await asyncio.to_thread(loader.load)
+        
+        # Добавляем имя файла в метаданные каждого документа
+        for doc in documents:
+            doc.metadata["source_file"] = file_path.name
+            doc.metadata["title"] = file_path.stem  # имя файла без расширения
+        
+        return documents
 
     async def load_files(self) -> List[Document]:
         """Загружает все файлы пользователя параллельно."""
         all_files = await self.files.download_all_files()
-        tasks = [self.load_file(f) for f in all_files]
+        # Convert strings to Path objects
+        tasks = [self.load_file(Path(f)) for f in all_files]
         results = await asyncio.gather(*tasks)
         # Объединяем списки документов из всех файлов
         return [doc for sublist in results for doc in sublist]

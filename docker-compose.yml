@@ -45,6 +45,9 @@ services:
       HF_HOME: /hf_cache
       HF_EMBEDDINGS_MODEL: ${HF_EMBEDDINGS_MODEL}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      LLM_PROVIDER: ${LLM_PROVIDER}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL}
     volumes:
       - ./hf_cache:/hf_cache
     healthcheck:

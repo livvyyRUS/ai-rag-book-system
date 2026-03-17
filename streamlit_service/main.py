@@ -4,7 +4,7 @@ from database import init_db, close_db, add_user, check_user, get_user_by_userna
 from jwt_tool import JWTPayload, encode_jwt, decode_jwt
 from rag_client import RAGClient
 import jwt as jwt_lib
-from minio_client import get_bucket_name, create_bucket_if_not_exists, upload_file
+from minio_client import get_bucket_name, create_bucket_if_not_exists, upload_file, list_files, delete_file
 
 # Инициализация БД при старте приложения
 @st.cache_resource
@@ -118,6 +118,42 @@ def auth_screen():
         register_form()
 
 
+def manage_files_page():
+    """Страница управления загруженными файлами"""
+    st.title("Управление файлами")
+    st.write("Просмотр и удаление загруженных файлов")
+
+    username = st.session_state["username"]
+    bucket_name = get_bucket_name(username)
+
+    try:
+        # Получаем список файлов
+        files = list_files(bucket_name)
+        
+        if not files:
+            st.info("У вас пока нет загруженных файлов")
+        else:
+            st.write(f"**Всего файлов:** {len(files)}")
+            
+            # Отображаем файлы в виде таблицы
+            for file_name in files:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"📄 {file_name}")
+                with col2:
+                    if st.button("🗑️ Удалить", key=f"delete_{file_name}"):
+                        try:
+                            delete_file(bucket_name, file_name)
+                            st.success(f"Файл '{file_name}' удалён")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Ошибка при удалении: {e}")
+                st.divider()
+                
+    except Exception as e:
+        st.error(f"Ошибка при получении списка файлов: {e}")
+
+
 def upload_files_page():
     st.title("Загрузка файлов")
     st.write("Загрузите файлы для обработки в RAG систему")
@@ -221,7 +257,7 @@ def main_app():
         st.write(f"Пользователь: **{st.session_state['username']}**")
         page = st.radio(
             "Навигация",
-            ["Загрузка файлов", "Чат с ботом"],
+            ["Загрузка файлов", "Управление файлами", "Чат с ботом"],
             index=0
         )
         st.divider()
@@ -232,6 +268,8 @@ def main_app():
     # Отображение выбранной страницы
     if page == "Загрузка файлов":
         upload_files_page()
+    elif page == "Управление файлами":
+        manage_files_page()
     else:
         chat_page()
 
