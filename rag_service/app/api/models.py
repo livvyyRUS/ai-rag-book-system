@@ -37,3 +37,15 @@ class StatusWithAnswerModel(BaseModel):
     status: str
     text: str
     citations: Optional[List[CitationModel]] = None  # список цитат, на которые опирался ответ
+
+
+class ClearHistoryRequestModel(BaseModel):
+    """Модель запроса на очистку истории."""
+    user_id: str
+    jwt_token: str
+
+
+class ClearHistoryResponseModel(BaseModel):
+    """Модель ответа на очистку истории."""
+    status: str
+    cleared: bool

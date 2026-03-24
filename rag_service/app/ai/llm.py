@@ -16,7 +16,8 @@ OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openrouter/free")
 OPENROUTER_BASE_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 
 # Common settings
-LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.7"))
+# Lower temperature for more factual, less creative responses (reduces hallucinations)
+LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.1"))
 
 
 if LLM_PROVIDER == "openrouter":

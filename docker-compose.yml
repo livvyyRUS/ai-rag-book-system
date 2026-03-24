@@ -50,6 +50,7 @@ services:
       OPENROUTER_MODEL: ${OPENROUTER_MODEL}
     volumes:
       - ./hf_cache:/hf_cache
+      - ./rag_data:/app/rag_data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/rag"]
       interval: 30s
@@ -99,7 +100,6 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-
   telegram_bot:
     build: telegram_bot
     environment:
@@ -117,3 +117,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_USER}
       MINIO_SECRET_KEY: ${MINIO_PASSWORD}
       MINIO_SECURE: false
+    depends_on:
+      - minio
+      - postgres
+      - rag_service

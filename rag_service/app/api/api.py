@@ -8,11 +8,14 @@ from .models import (
     StatusModel,
     StatusWithAnswerModel,
     CitationModel,
+    ClearHistoryRequestModel,
+    ClearHistoryResponseModel,
 )
 from app.rag import RAG
 from app.ai.agents.rag_agent import RAGAgent
 from app.ai.agents.talk_agent import TalkAgent
 from app.files import Files
+from app.ai.get_session_history import clear_session_history
 
 from app.jwt import decode_jwt
 from jwt import DecodeError, ExpiredSignatureError
@@ -261,3 +264,27 @@ async def chat(user_id: str, query: str, jwt_token: str) -> StatusWithAnswerMode
         text=answer,
         citations=citations if citations else None
     )
+
+
+@router.post("/clear_history", response_model=ClearHistoryResponseModel)
+async def clear_history(request: ClearHistoryRequestModel) -> ClearHistoryResponseModel:
+    """Очищает историю сообщений конкретного пользователя в RAG-сервисе.
+    
+    Удаляет всю историю диалогов пользователя из памяти, что позволяет начать разговор заново.
+    """
+    try:
+        payload = decode_jwt(jwt_token=request.jwt_token)
+        if payload.user_id != request.user_id:
+            raise HTTPException(400, "Wrong token")
+    except DecodeError as e:
+        raise HTTPException(400, "Wrong token")
+    except ExpiredSignatureError as e:
+        raise HTTPException(400, "Token expired")
+    
+    cleared = clear_session_history(session_id=request.user_id)
+    
+    return ClearHistoryResponseModel(
+        status="ok",
+        cleared=cleared
+    )
+
