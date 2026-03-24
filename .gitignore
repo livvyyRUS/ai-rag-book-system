@@ -223,6 +223,7 @@ minio_data/
 hf_cache/
 ollama_models/
 
+*/.vscode/*
 */pg_data//*
 */rag_data/*
 */cache/*

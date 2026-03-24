@@ -250,19 +250,20 @@ async def chat(user_id: str, query: str, jwt_token: str) -> StatusWithAnswerMode
         fragments=fragments
     )
 
-    # Формируем список цитат из фрагментов
-    citations = []
-    for frag in fragments:
-        citations.append(CitationModel(
+    # Формируем список цитат из фрагментов (возвращаем всегда, даже если пустой)
+    citations = [
+        CitationModel(
             book=frag.get("book", "Неизвестно"),
             location=frag.get("location", ""),
             text=frag.get("text", "")
-        ))
+        )
+        for frag in fragments
+    ]
 
     return StatusWithAnswerModel(
         status="ok",
         text=answer,
-        citations=citations if citations else None
+        citations=citations
     )
 
 
