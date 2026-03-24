@@ -215,12 +215,15 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+.vscode/
+rag_data/
+
 pg_data/
 minio_data/
 hf_cache/
 ollama_models/
 
-
+*/pg_data//*
 */rag_data/*
 */cache/*
 */hf_cache/*

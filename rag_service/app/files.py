@@ -1,6 +1,7 @@
 import os
 import asyncio
 import uuid
+import shutil
 import aiofiles
 from pathlib import Path
 from typing import List, Optional
@@ -47,6 +48,12 @@ class Files:
     def _ensure_download_dir(self):
         """Создание локальной папки для скачивания, если её нет."""
         Path(self._download_dir).mkdir(parents=True, exist_ok=True)
+
+    async def clear_cache(self):
+        """Очистка локального кэша файлов."""
+        if self._download_dir.exists():
+            shutil.rmtree(self._download_dir)
+        self._download_dir.mkdir(parents=True, exist_ok=True)
 
     async def list_objects(self) -> List[str]:
         """
