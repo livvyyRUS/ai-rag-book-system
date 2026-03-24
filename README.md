@@ -1,8 +1,8 @@
 # AI RAG Book System 📚
 
-A microservices-based system for chatting with books and documents using RAG (Retrieval-Augmented Generation) technology.
+Микросервисная система для общения с книгами и документами с использованием технологии RAG (Retrieval-Augmented Generation).
 
-## 🏗️ Architecture
+## 🏗️ Архитектура
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -11,303 +11,303 @@ A microservices-based system for chatting with books and documents using RAG (Re
 │                                                                      │
 │  ┌──────────────────┐         ┌──────────────────────────────────┐ │
 │  │  Streamlit       │  HTTP   │  RAG Service (FastAPI)           │ │
-│  │  Service         │────────▶│  - Document Processing           │ │
-│  │  (Port 8501)     │         │  - Vector Search                 │ │
-│  │                  │         │  - LLM Integration               │ │
+│  │  Service         │────────▶│  - Обработка документов          │ │
+│  │  (Порт 8501)     │         │  - Векторный поиск               │ │
+│  │                  │         │  - Интеграция с LLM              │ │
 │  └──────────────────┘         └──────────────────────────────────┘ │
 │         │                              │  │  │                      │
 │         │                              │  │  │                      │
 │         ▼                              ▼  │  │                      │
 │  ┌──────────────────┐         ┌──────────────────────────────────┐ │
 │  │  PostgreSQL      │         │  Minio          │  Ollama        │ │
-│  │  (Users & Auth)  │         │  (File Storage) │  (LLM)         │ │
-│  │  Port 5432       │         │  Port 9000      │  Port 11434    │ │
+│  │  (Пользователи)  │         │  (Хранилище)    │  (LLM)         │ │
+│  │  Порт 5432       │         │  Порт 9000      │  Порт 11434    │ │
 │  └──────────────────┘         └──────────────────────────────────┘ │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## 📁 Project Structure
+## 📁 Структура проекта
 
 ```
 ai-rag-book-system/
-├── docker-compose.yml          # Docker Compose configuration
-├── .env                        # Environment variables (create from .env.example)
+├── docker-compose.yml          # Конфигурация Docker Compose
+├── .env                        # Переменные окружения (создать из .env.example)
 ├── .gitignore
-├── README.md                   # This file
+├── README.md                   # Этот файл
 │
-├── rag_service/                # RAG Microservice (FastAPI)
+├── rag_service/                # RAG микросервис (FastAPI)
 │   ├── app/
-│   │   ├── main.py            # FastAPI application entry point
-│   │   ├── api/               # API endpoints
-│   │   ├── ai/                # AI/LLM integration
-│   │   ├── rag.py             # RAG core logic
-│   │   └── files.py           # File handling (Minio)
+│   │   ├── main.py            # Точка входа FastAPI
+│   │   ├── api/               # API эндпоинты
+│   │   ├── ai/                # Интеграция с ИИ/LLM
+│   │   ├── rag.py             # Основная логика RAG
+│   │   └── files.py           # Работа с файлами (Minio)
 │   ├── Dockerfile
 │   ├── pyproject.toml
 │   └── README.md
 │
-├── streamlit_service/          # Web UI (Streamlit)
-│   ├── main.py                # Streamlit application
-│   ├── database.py            # Database operations
-│   ├── jwt_tool.py            # JWT authentication
-│   ├── rag_client.py          # RAG Service client
-│   ├── minio_client.py        # Minio client
+├── streamlit_service/          # Веб-интерфейс (Streamlit)
+│   ├── main.py                # Приложение Streamlit
+│   ├── database.py            # Операции с базой данных
+│   ├── jwt_tool.py            # JWT аутентификация
+│   ├── rag_client.py          # Клиент для RAG сервиса
+│   ├── minio_client.py        # Клиент для Minio
 │   ├── Dockerfile
 │   ├── pyproject.toml
 │   └── README.md
 │
-├── pg_data/                    # PostgreSQL data (volume)
-├── minio_data/                 # Minio data (volume)
-├── hf_cache/                   # HuggingFace models cache
-├── ollama_models/              # Ollama models cache
-└── rag_data/                   # RAG processed data
+├── pg_data/                    # Данные PostgreSQL (том)
+├── minio_data/                 # Данные Minio (том)
+├── hf_cache/                   # Кэш моделей HuggingFace
+├── ollama_models/              # Кэш моделей Ollama
+└── rag_data/                   # Обработанные данные RAG
 ```
 
-## 🚀 Quick Start
+## 🚀 Быстрый старт
 
-### Prerequisites
+### Требования
 
-- **Docker** and **Docker Compose** installed
-- **NVIDIA GPU** (optional, for better LLM performance)
-- **8+ GB RAM** (16+ GB recommended)
-- **Python 3.11+** (for local development)
+- **Docker** и **Docker Compose** установлены
+- **NVIDIA GPU** (опционально, для лучшей производительности LLM)
+- **8+ ГБ ОЗУ** (рекомендуется 16+ ГБ)
+- **Python 3.11+** (для локальной разработки)
 
-### 1. Clone the Repository
+### 1. Клонирование репозитория
 
 ```bash
-git clone <repository-url>
+git clone <url-репозитория>
 cd ai-rag-book-system
 ```
 
-### 2. Configure Environment Variables
+### 2. Настройка переменных окружения
 
-Create a `.env` file in the root directory:
+Создайте файл `.env` в корневой директории:
 
 ```bash
-# Copy example if available
+# Скопируйте пример, если доступен
 cp .env.example .env
 ```
 
-Edit `.env` with your settings:
+Отредактируйте `.env` с вашими настройками:
 
 ```env
-# ==================== JWT Configuration ====================
-JWT_SECRET_KEY=your-super-secret-key-change-in-production
+# ==================== Конфигурация JWT ====================
+JWT_SECRET_KEY=ваш-секретный-ключ-замените-в-продакшене
 
-# ==================== PostgreSQL Configuration ====================
+# ==================== Конфигурация PostgreSQL ====================
 POSTGRES_USER=bookuser
 POSTGRES_PASSWORD=bookpassword
 POSTGRES_DB=bookdb
 
-# ==================== Minio Configuration ====================
+# ==================== Конфигурация Minio ====================
 MINIO_USER=minioadmin
 MINIO_PASSWORD=minioadmin
 MINIO_HOST=minio
 
-# ==================== LLM Configuration ====================
-# Choose one: ollama or openrouter
+# ==================== Конфигурация LLM ====================
+# Выберите один: ollama или openrouter
 LLM_PROVIDER=ollama
 
-# For Ollama (local, free)
+# Для Ollama (локально, бесплатно)
 OLLAMA_MODEL=qwen2.5:7b-instruct
 
-# For OpenRouter (cloud, API key required)
+# Для OpenRouter (облако, требуется API ключ)
 # LLM_PROVIDER=openrouter
-# OPENROUTER_API_KEY=your-openrouter-api-key
+# OPENROUTER_API_KEY=ваш-api-ключ-openrouter
 # OPENROUTER_MODEL=meta-llama/llama-3-8b-instruct:free
 
-# ==================== Embeddings Configuration ====================
+# ==================== Конфигурация эмбеддингов ====================
 HF_EMBEDDINGS_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 ```
 
-### 3. Start All Services
+### 3. Запуск всех сервисов
 
 ```bash
 docker-compose up -d
 ```
 
-Wait for all services to start (2-3 minutes for first run):
+Дождитесь запуска всех сервисов (2-3 минуты при первом запуске):
 
 ```bash
 docker-compose ps
 ```
 
-### 4. Access the Application
+### 4. Доступ к приложению
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Streamlit UI** | http://localhost:8501 | Web interface |
-| **RAG API** | http://localhost:8000/docs | API documentation |
-| **Minio Console** | http://localhost:9001 | File storage UI |
-| **Ollama** | http://localhost:11434 | LLM server |
+| Сервис | URL | Описание |
+|--------|-----|----------|
+| **Streamlit UI** | http://localhost:8501 | Веб-интерфейс |
+| **RAG API** | http://localhost:8000/docs | Документация API |
+| **Minio Console** | http://localhost:9001 | UI хранилища файлов |
+| **Ollama** | http://localhost:11434 | Сервер LLM |
 
-## 📖 Usage Guide
+## 📖 Руководство пользователя
 
-### Step 1: Register an Account
+### Шаг 1: Регистрация аккаунта
 
-1. Open http://localhost:8501
-2. Click on "Регистрация" tab
-3. Enter username and password (min 6 characters)
-4. Click "Зарегистрироваться"
+1. Откройте http://localhost:8501
+2. Перейдите на вкладку «Регистрация»
+3. Введите имя пользователя и пароль (минимум 6 символов)
+4. Нажмите «Зарегистрироваться»
 
-### Step 2: Login
+### Шаг 2: Вход в систему
 
-1. Enter your credentials
-2. Click "Войти"
+1. Введите ваши учётные данные
+2. Нажмите «Войти»
 
-### Step 3: Upload Documents
+### Шаг 3: Загрузка документов
 
-1. Navigate to "Загрузка файлов"
-2. Select PDF, TXT, DOCX, or MD files
-3. Click "Загрузить и обработать файлы"
-4. Wait for processing to complete
+1. Перейдите в раздел «Загрузка файлов»
+2. Выберите файлы PDF, TXT, DOCX или MD
+3. Нажмите «Загрузить и обработать файлы»
+4. Дождитесь завершения обработки
 
-### Step 4: Chat with Your Documents
+### Шаг 4: Общение с документами
 
-1. Navigate to "Чат с ботом"
-2. Ask questions about your documents
-3. Get AI-powered answers with citations
+1. Перейдите в раздел «Чат с ботом»
+2. Задавайте вопросы по вашим документам
+3. Получайте ответы от ИИ с цитатами
 
-### Step 5: Manage Files
+### Шаг 5: Управление файлами
 
-1. Navigate to "Управление файлами"
-2. View all uploaded files
-3. Delete files you no longer need
+1. Перейдите в раздел «Управление файлами»
+2. Просматривайте все загруженные файлы
+3. Удаляйте ненужные файлы
 
-## 🔧 Services Overview
+## 🔧 Обзор сервисов
 
 ### RAG Service (FastAPI)
 
-The core service handling document processing and RAG operations.
+Основной сервис для обработки документов и RAG-операций.
 
-**Key Features:**
-- Document upload and processing (PDF, TXT, DOCX, MD)
-- Vector embeddings generation
-- Semantic search
-- LLM-powered chat
-- JWT authentication
+**Основные возможности:**
+- Загрузка и обработка документов (PDF, TXT, DOCX, MD)
+- Генерация векторных эмбеддингов
+- Семантический поиск
+- Чат с использованием LLM
+- JWT аутентификация
 
-**Documentation:** [`rag_service/README.md`](rag_service/README.md)
+**Документация:** [`rag_service/README.md`](rag_service/README.md)
 
-**API Endpoints:**
+**API эндпоинты:**
 ```bash
-# Upload documents
+# Загрузка документов
 POST /api/rag/upload_books
 
-# Generate vector database
+# Генерация векторной базы данных
 POST /api/rag/generate_chroma_db
 
-# Semantic search
-GET /api/rag/similarity_search?query=<your-query>&k=3
+# Семантический поиск
+GET /api/rag/similarity_search?query=<ваш-запрос>&k=3
 
-# Chat with documents
-GET /api/rag/chat?query=<your-question>
+# Чат с документами
+GET /api/rag/chat?query=<ваш-вопрос>
 ```
 
 ### Streamlit Service
 
-Web UI for user interaction.
+Веб-интерфейс для взаимодействия с пользователем.
 
-**Key Features:**
-- User registration and authentication
-- File upload interface
-- Document management
-- Chat interface with RAG bot
+**Основные возможности:**
+- Регистрация и аутентификация пользователей
+- Интерфейс загрузки файлов
+- Управление документами
+- Чат-интерфейс с RAG-ботом
 
-**Documentation:** [`streamlit_service/README.md`](streamlit_service/README.md)
+**Документация:** [`streamlit_service/README.md`](streamlit_service/README.md)
 
 ### PostgreSQL
 
-User authentication and data storage.
+Хранение данных пользователей и аутентификация.
 
-- Port: `5432`
-- Data volume: `./pg_data`
+- Порт: `5432`
+- Том данных: `./pg_data`
 
 ### Minio
 
-Object storage for uploaded documents.
+Объектное хранилище для загруженных документов.
 
-- Console: http://localhost:9001
+- Консоль: http://localhost:9001
 - API: http://localhost:9000
-- Data volume: `./minio_data`
+- Том данных: `./minio_data`
 
 ### Ollama
 
-Local LLM server.
+Локальный сервер LLM.
 
-- Port: `11434`
-- Models volume: `./ollama_models`
+- Порт: `11434`
+- Том моделей: `./ollama_models`
 
-## 🛠️ Development
+## 🛠️ Разработка
 
-### Running Services Individually
+### Запуск сервисов по отдельности
 
 ```bash
-# Start only dependencies
+# Запуск только зависимостей
 docker-compose up -d postgres minio ollama
 
-# Start RAG service locally
+# Запуск RAG сервиса локально
 cd rag_service
 uv sync
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Start Streamlit locally
+# Запуск Streamlit локально
 cd streamlit_service
 uv sync
 streamlit run main.py
 ```
 
-### Building Images
+### Сборка образов
 
 ```bash
 docker-compose build
 ```
 
-### Viewing Logs
+### Просмотр логов
 
 ```bash
-# All services
+# Все сервисы
 docker-compose logs -f
 
-# Specific service
+# Конкретный сервис
 docker-compose logs -f rag_service
 ```
 
-### Stopping Services
+### Остановка сервисов
 
 ```bash
-# Stop all
+# Остановить все
 docker-compose down
 
-# Stop and remove volumes (data will be lost!)
+# Остановить и удалить тома (данные будут потеряны!)
 docker-compose down -v
 ```
 
-## 🔐 Security
+## 🔐 Безопасность
 
-- **JWT Authentication**: All API requests require valid JWT tokens
-- **User Isolation**: Each user's data is isolated by user_id
-- **Password Hashing**: Passwords are hashed using bcrypt
-- **Input Validation**: File types and sizes are validated
+- **JWT аутентификация**: Все API-запросы требуют валидный JWT-токен
+- **Изоляция пользователей**: Данные каждого пользователя изолированы по user_id
+- **Хеширование паролей**: Пароли хешируются с помощью bcrypt
+- **Валидация ввода**: Типы и размеры файлов проверяются
 
-## ⚙️ Configuration Options
+## ⚙️ Опции конфигурации
 
-### LLM Providers
+### LLM провайдеры
 
-#### Option 1: Ollama (Local, Free)
+#### Вариант 1: Ollama (локально, бесплатно)
 
 ```env
 LLM_PROVIDER=ollama
 OLLAMA_MODEL=qwen2.5:7b-instruct
 ```
 
-Recommended models:
-- `qwen2.5:7b-instruct` - Good balance of speed and quality
-- `qwen2.5:3b-instruct` - Faster, less RAM
-- `llama3.2:3b-instruct` - Alternative option
+Рекомендуемые модели:
+- `qwen2.5:7b-instruct` — Хороший баланс скорости и качества
+- `qwen2.5:3b-instruct` — Быстрее, меньше ОЗУ
+- `llama3.2:3b-instruct` — Альтернативный вариант
 
-#### Option 2: OpenRouter (Cloud, API Key)
+#### Вариант 2: OpenRouter (облако, API ключ)
 
 ```env
 LLM_PROVIDER=openrouter
@@ -315,108 +315,108 @@ OPENROUTER_API_KEY=sk-or-...
 OPENROUTER_MODEL=meta-llama/llama-3-8b-instruct:free
 ```
 
-Get API key at: https://openrouter.ai
+Получите API ключ на: https://openrouter.ai
 
-### Embedding Models
+### Модели эмбеддингов
 
 ```env
 HF_EMBEDDINGS_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 ```
 
-Alternative models:
-- `sentence-transformers/all-MiniLM-L6-v2` (English, faster)
-- `intfloat/multilingual-e5-large` (Multilingual, better quality)
+Альтернативные модели:
+- `sentence-transformers/all-MiniLM-L6-v2` (английский, быстрее)
+- `intfloat/multilingual-e5-large` (мультиязычная, лучшее качество)
 
-## 🐛 Troubleshooting
+## 🐛 Решение проблем
 
-### Services Won't Start
+### Сервисы не запускаются
 
 ```bash
-# Check logs
+# Проверьте логи
 docker-compose logs
 
-# Restart services
+# Перезапустите сервисы
 docker-compose restart
 
-# Rebuild images
+# Пересоберите образы
 docker-compose up -d --build
 ```
 
-### Ollama Model Download Fails
+### Ошибка загрузки модели Ollama
 
 ```bash
-# Check Ollama logs
+# Проверьте логи Ollama
 docker-compose logs ollama
 
-# Manually pull model
+# Загрузите модель вручную
 docker exec -it ollama ollama pull qwen2.5:7b-instruct
 ```
 
-### Out of Memory
+### Недостаточно памяти
 
-- Use smaller LLM models (e.g., `qwen2.5:1.5b`)
-- Increase Docker memory limits
-- Use cloud LLM (OpenRouter)
+- Используйте модели меньшего размера (например, `qwen2.5:1.5b`)
+- Увеличьте лимиты памяти Docker
+- Используйте облачную LLM (OpenRouter)
 
-### Database Connection Issues
+### Проблемы с подключением к базе данных
 
 ```bash
-# Check PostgreSQL is running
+# Проверьте, работает ли PostgreSQL
 docker-compose ps postgres
 
-# Restart PostgreSQL
+# Перезапустите PostgreSQL
 docker-compose restart postgres
 ```
 
-### Minio Connection Issues
+### Проблемы с подключением к Minio
 
 ```bash
-# Check Minio is running
+# Проверьте, работает ли Minio
 docker-compose ps minio
 
-# Access Minio console
+# Откройте консоль Minio
 # http://localhost:9001
 ```
 
-## 📊 Performance Benchmarks
+## 📊 Бенчмарки производительности
 
-| Operation | Average Time |
-|-----------|-------------|
-| Book Upload (300 pages) | 5-10 sec |
-| ChromaDB Generation | 30-60 sec |
-| Semantic Search | 0.5-2 sec |
-| Answer Generation (LLM) | 3-10 sec |
+| Операция | Среднее время |
+|----------|---------------|
+| Загрузка книги (300 стр.) | 5-10 сек |
+| Генерация ChromaDB | 30-60 сек |
+| Семантический поиск | 0,5-2 сек |
+| Генерация ответа (LLM) | 3-10 сек |
 
-## 📝 API Documentation
+## 📝 Документация API
 
-Full API documentation is available at:
+Полная документация API доступна по адресам:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## 🤝 Contributing
+## 🤝 Вклад в проект
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Форкните репозиторий
+2. Создайте ветку (`git checkout -b feature/amazing-feature`)
+3. Закоммитьте изменения (`git commit -m 'Add amazing feature'`)
+4. Отправьте в удалённый репозиторий (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
 
-## 📄 License
+## 📄 Лицензия
 
 MIT License
 
-## 🙏 Acknowledgments
+## 🙏 Благодарности
 
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
-- [Streamlit](https://streamlit.io/) - Data app framework
-- [LangChain](https://python.langchain.com/) - LLM orchestration framework
-- [Ollama](https://ollama.ai/) - Local LLM server
-- [Minio](https://min.io/) - Object storage
-- [ChromaDB](https://www.trychroma.com/) - Vector database
+- [FastAPI](https://fastapi.tiangolo.com/) — Современный веб-фреймворк Python
+- [Streamlit](https://streamlit.io/) — Фреймворк для дата-приложений
+- [LangChain](https://python.langchain.com/) — Фреймворк для оркестрации LLM
+- [Ollama](https://ollama.ai/) — Локальный сервер LLM
+- [Minio](https://min.io/) — Объектное хранилище
+- [ChromaDB](https://www.trychroma.com/) — Векторная база данных
 
-## 📞 Support
+## 📞 Поддержка
 
-For issues and questions:
-- Create an issue in the repository
-- Check existing documentation
-- Review API documentation at http://localhost:8000/docs
+По вопросам и проблемам:
+- Создайте issue в репозитории
+- Проверьте существующую документацию
+- Изучите документацию API на http://localhost:8000/docs

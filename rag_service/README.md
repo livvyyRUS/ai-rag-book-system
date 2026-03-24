@@ -5,10 +5,12 @@
 ## 📖 Описание
 
 RAG Service — это основной компонент системы, который отвечает за:
-- Загрузку и обработку документов (PDF, TXT)
+- Загрузку и обработку документов (PDF, TXT, DOCX, MD)
 - Создание векторных представлений текста
 - Семантический поиск по документам
 - Генерацию ответов с использованием языковых моделей
+
+> **Важно:** Система поддерживает обработку документов **только на русском языке**. Документы на других языках могут обрабатываться некорректно.
 
 ## 🏗️ Архитектура
 
@@ -34,7 +36,7 @@ RAG Service — это основной компонент системы, ко�
 
 - Python 3.11+
 - Docker и Docker Compose (для запуска зависимостей)
-- 4+ GB RAM
+- 4+ ГБ ОЗУ
 
 ### Установка
 
@@ -47,7 +49,7 @@ uv sync
 2. **Создайте файл `.env` в корне проекта:**
 ```env
 # JWT
-JWT_SECRET_KEY=your-super-secret-key-here
+JWT_SECRET_KEY=ваш-секретный-ключ
 
 # Minio
 MINIO_USER=minioadmin
@@ -61,7 +63,7 @@ OLLAMA_BASE_URL=http://localhost:11434
 
 # Или для OpenRouter:
 # LLM_PROVIDER=openrouter
-# OPENROUTER_API_KEY=your-api-key
+# OPENROUTER_API_KEY=ваш-api-ключ
 # OPENROUTER_MODEL=meta-llama/llama-3-8b-instruct:free
 
 # HuggingFace Embeddings
@@ -130,7 +132,7 @@ curl -X POST "http://localhost:8000/api/rag/upload_books?user_id=user-default&jw
   -F "files=@book2.txt"
 ```
 
-**Поддерживаемые форматы:** `.pdf`, `.txt`
+**Поддерживаемые форматы:** `.pdf`, `.txt`, `.docx`, `.md`
 
 **Ответ:**
 ```json
@@ -189,7 +191,7 @@ curl "http://localhost:8000/api/rag/similarity_search?user_id=user-default&query
 
 **GET** `/api/rag/similarity_search_with_scores`
 
-Поиск с возвращением scores релевантности.
+Поиск с возвращением оценок релевантности.
 
 ```bash
 curl "http://localhost:8000/api/rag/similarity_search_with_scores?user_id=user-default&query=Раскольников&k=3&jwt_token=YOUR_TOKEN"
@@ -325,7 +327,7 @@ uv run pytest
 | `OPENROUTER_BASE_URL` | URL API OpenRouter | `https://openrouter.ai/api/v1` |
 | `HF_EMBEDDINGS_MODEL` | Модель эмбеддингов | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` |
 
-## 🐛 Troubleshooting
+## 🐛 Решение проблем
 
 ### Ошибка "База данных не найдена"
 ```bash
@@ -356,7 +358,7 @@ docker-compose logs ollama
 |----------|-----------------|
 | Загрузка книги (300 стр.) | 5-10 сек |
 | Генерация ChromaDB | 30-60 сек |
-| Семантический поиск | 0.5-2 сек |
+| Семантический поиск | 0,5-2 сек |
 | Генерация ответа (LLM) | 3-10 сек |
 
 ## 🤝 Вклад в проект
@@ -364,7 +366,7 @@ docker-compose logs ollama
 1. Fork репозиторий
 2. Создайте ветку (`git checkout -b feature/amazing-feature`)
 3. Закоммитьте изменения (`git commit -m 'Add amazing feature'`)
-4. Отправьте в удаленный репозиторий (`git push origin feature/amazing-feature`)
+4. Отправьте в удалённый репозиторий (`git push origin feature/amazing-feature`)
 5. Откройте Pull Request
 
 ## 📄 Лицензия

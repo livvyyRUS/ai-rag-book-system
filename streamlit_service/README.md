@@ -1,15 +1,17 @@
 # Streamlit Service 🎨
 
-Web UI for the AI RAG Book System built with Streamlit.
+Веб-интерфейс для системы AI RAG Book System, разработанный с использованием Streamlit.
 
-## 📖 Description
+## 📖 Описание
 
-Streamlit Service provides a user-friendly web interface for:
-- User registration and authentication
-- Document upload and management
-- Chat with documents using RAG technology
+Streamlit Service предоставляет удобный веб-интерфейс для:
+- Регистрации и аутентификации пользователей
+- Загрузки и управления документами
+- Общения с документами с использованием технологии RAG
 
-## 🏗️ Architecture
+> **Важно:** Система поддерживает загрузку документов **только на русском языке**. Документы на других языках могут обрабатываться некорректно.
+
+## 🏗️ Архитектура
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -23,134 +25,134 @@ Streamlit Service provides a user-friendly web interface for:
          ▼                ▼                ▼
 ┌─────────────────┐ ┌──────────────┐ ┌──────────────┐
 │   PostgreSQL    │ │    Minio     │ │  RAG Service │
-│   (Users)       │ │   (Files)    │ │   (FastAPI)  │
+│   (Пользователи)│ │   (Файлы)    │ │   (FastAPI)  │
 └─────────────────┘ └──────────────┘ └──────────────┘
 ```
 
-## 🚀 Quick Start
+## 🚀 Быстрый старт
 
-### Prerequisites
+### Требования
 
 - Python 3.11+
-- Docker and Docker Compose (for dependencies)
-- RAG Service running
+- Docker и Docker Compose (для зависимостей)
+- Запущенный RAG Service
 
-### Installation
+### Установка
 
-1. **Install dependencies:**
+1. **Установите зависимости:**
 ```bash
 cd streamlit_service
 uv sync
 ```
 
-2. **Create `.env` file in the project root:**
+2. **Создайте файл `.env` в корне проекта:**
 ```env
-# JWT Configuration
-JWT_SECRET_KEY=your-super-secret-key-here
+# Конфигурация JWT
+JWT_SECRET_KEY=ваш-секретный-ключ
 
-# Database Configuration
+# Конфигурация базы данных
 DATABASE_URL=postgres://user:password@localhost:5432/bookdb
 
-# RAG Service Configuration
+# Конфигурация RAG Service
 RAG_API_URL=http://localhost:8000/api/rag
 
-# Minio Configuration
+# Конфигурация Minio
 MINIO_ENDPOINT=localhost:9000
 MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin
 MINIO_SECURE=false
 ```
 
-3. **Start dependencies (PostgreSQL, Minio, RAG Service):**
+3. **Запустите зависимости (PostgreSQL, Minio, RAG Service):**
 ```bash
 docker-compose up -d postgres minio rag_service
 ```
 
-4. **Run Streamlit:**
+4. **Запустите Streamlit:**
 ```bash
 streamlit run main.py
 ```
 
-5. **Open in browser:**
+5. **Откройте в браузере:**
 ```
 http://localhost:8501
 ```
 
 ## 🐳 Docker
 
-### Build and Run
+### Сборка и запуск
 
 ```bash
-# Build image
+# Сборка образа
 docker-compose build streamlit_service
 
-# Run service
+# Запуск сервиса
 docker-compose up -d streamlit_service
 ```
 
-### Logs
+### Логи
 
 ```bash
 docker-compose logs -f streamlit_service
 ```
 
-## 🎯 Features
+## 🎯 Возможности
 
-### Authentication
+### Аутентификация
 
-- **Registration**: Create new user accounts
-- **Login**: Secure authentication with JWT tokens
-- **Session Management**: Persistent sessions across page reloads
-- **Logout**: Secure session cleanup
+- **Регистрация**: Создание новых учётных записей
+- **Вход**: Безопасная аутентификация с JWT-токенами
+- **Управление сессией**: Сохранение сессии при перезагрузке страницы
+- **Выход**: Безопасная очистка сессии
 
-### File Management
+### Управление файлами
 
-- **Upload**: Upload multiple documents (PDF, TXT, DOCX, MD)
-- **View**: List all uploaded files
-- **Delete**: Remove unwanted files
-- **Processing**: Automatic document processing and vectorization
+- **Загрузка**: Загрузка нескольких документов (PDF, TXT, DOCX, MD)
+- **Просмотр**: Список всех загруженных файлов
+- **Удаление**: Удаление ненужных файлов
+- **Обработка**: Автоматическая обработка и векторизация документов
 
-### Chat Interface
+### Чат-интерфейс
 
-- **Ask Questions**: Natural language queries about documents
-- **AI Responses**: LLM-powered answers with citations
-- **History**: Conversation history within session
-- **Clear History**: Reset conversation context
+- **Вопросы**: Запросы на естественном языке о документах
+- **Ответы ИИ**: Ответы от LLM с цитатами
+- **История**: История разговора в рамках сессии
+- **Очистка истории**: Сброс контекста разговора
 
-## 📁 Project Structure
+## 📁 Структура проекта
 
 ```
 streamlit_service/
-├── main.py                 # Main Streamlit application
-├── database.py             # Database operations (Tortoise ORM)
-├── models.py               # Database models (User)
-├── jwt_tool.py             # JWT token utilities
-├── rag_client.py           # RAG Service API client
-├── minio_client.py         # Minio storage client
-├── test_auth.py            # Authentication tests
-├── Dockerfile              # Docker configuration
-├── pyproject.toml          # Python dependencies
-├── uv.lock                 # Dependency lock file
-└── README.md               # This file
+├── main.py                 # Основное приложение Streamlit
+├── database.py             # Операции с базой данных (Tortoise ORM)
+├── models.py               # Модели базы данных (User)
+├── jwt_tool.py             # Утилиты JWT-токенов
+├── rag_client.py           # Клиент для API RAG Service
+├── minio_client.py         # Клиент для хранилища Minio
+├── test_auth.py            # Тесты аутентификации
+├── Dockerfile              # Конфигурация Docker
+├── pyproject.toml          # Зависимости Python
+├── uv.lock                 # Lock-файл зависимостей
+└── README.md               # Этот файл
 ```
 
-## 🔧 Configuration
+## 🔧 Конфигурация
 
-### Environment Variables
+### Переменные окружения
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `JWT_SECRET_KEY` | Secret key for JWT tokens | `secret_key` |
-| `DATABASE_URL` | PostgreSQL connection string | `postgres://user:password@localhost:5432/streamlit_db` |
-| `RAG_API_URL` | RAG Service API URL | `http://localhost:8000/api/rag` |
-| `MINIO_ENDPOINT` | Minio server endpoint | `localhost:9000` |
-| `MINIO_ACCESS_KEY` | Minio access key | `minioadmin` |
-| `MINIO_SECRET_KEY` | Minio secret key | `minioadmin` |
-| `MINIO_SECURE` | Use HTTPS for Minio | `false` |
+| Переменная | Описание | По умолчанию |
+|------------|----------|--------------|
+| `JWT_SECRET_KEY` | Секретный ключ для JWT-токенов | `secret_key` |
+| `DATABASE_URL` | Строка подключения PostgreSQL | `postgres://user:password@localhost:5432/streamlit_db` |
+| `RAG_API_URL` | URL API RAG Service | `http://localhost:8000/api/rag` |
+| `MINIO_ENDPOINT` | Адрес сервера Minio | `localhost:9000` |
+| `MINIO_ACCESS_KEY` | Ключ доступа Minio | `minioadmin` |
+| `MINIO_SECRET_KEY` | Секретный ключ Minio | `minioadmin` |
+| `MINIO_SECURE` | Использовать HTTPS для Minio | `false` |
 
-### Database Configuration
+### Конфигурация базы данных
 
-The service uses **Tortoise ORM** with PostgreSQL:
+Сервис использует **Tortoise ORM** с PostgreSQL:
 
 ```python
 # database.py
@@ -160,9 +162,9 @@ await Tortoise.init(
 )
 ```
 
-### JWT Configuration
+### Конфигурация JWT
 
-Tokens are valid for **1 hour** by default:
+Токены действительны **1 час** по умолчанию:
 
 ```python
 # jwt_tool.py
@@ -171,28 +173,28 @@ class JWTPayload(BaseModel):
     exp: datetime.datetime = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
 ```
 
-## 🎨 Pages
+## 🎨 Страницы
 
-### 1. Authentication Page
+### 1. Страница аутентификации
 
-**Tabs:**
-- **Вход (Login)**: Enter credentials to access your account
-- **Регистрация (Register)**: Create a new account
+**Вкладки:**
+- **Вход**: Введите учётные данные для доступа к аккаунту
+- **Регистрация**: Создание нового аккаунта
 
-**Features:**
-- Password validation (min 6 characters)
-- Duplicate username check
-- Automatic JWT token generation on login
+**Возможности:**
+- Валидация пароля (минимум 6 символов)
+- Проверка уникальности имени пользователя
+- Автоматическая генерация JWT-токена при входе
 
-### 2. Upload Files Page
+### 2. Страница загрузки файлов
 
-**Features:**
-- Multi-file upload
-- File type validation (PDF, TXT, DOCX, MD)
-- Progress indicators
-- Automatic ChromaDB generation after upload
+**Возможности:**
+- Загрузка нескольких файлов
+- Валидация типов файлов (PDF, TXT, DOCX, MD)
+- Индикаторы прогресса
+- Автоматическая генерация ChromaDB после загрузки
 
-**Usage:**
+**Использование:**
 ```python
 uploaded_files = st.file_uploader(
     "Выберите файлы для загрузки",
@@ -201,22 +203,22 @@ uploaded_files = st.file_uploader(
 )
 ```
 
-### 3. Manage Files Page
+### 3. Страница управления файлами
 
-**Features:**
-- List all uploaded files
-- Delete files with confirmation
-- File count display
+**Возможности:**
+- Список всех загруженных файлов
+- Удаление файлов с подтверждением
+- Отображение количества файлов
 
-### 4. Chat Page
+### 4. Страница чата
 
-**Features:**
-- Chat interface with message history
-- Real-time AI responses
-- Error handling
-- Clear history button
+**Возможности:**
+- Чат-интерфейс с историей сообщений
+- Ответы ИИ в реальном времени
+- Обработка ошибок
+- Кнопка очистки истории
 
-**Usage:**
+**Использование:**
 ```python
 if prompt := st.chat_input("Введите ваш вопрос..."):
     st.session_state["messages"].append({"role": "user", "content": prompt})
@@ -224,156 +226,156 @@ if prompt := st.chat_input("Введите ваш вопрос..."):
     st.session_state["messages"].append({"role": "assistant", "content": result.text})
 ```
 
-## 📡 API Client
+## 📡 Клиент API
 
 ### RAGClient
 
-Python client for RAG Service API:
+Python-клиент для API RAG Service:
 
 ```python
 from rag_client import RAGClient
 
 rag_client = RAGClient(
-    jwt_token="your-jwt-token",
+    jwt_token="ваш-jwt-токен",
     user_id="user-username"
 )
 
-# Generate ChromaDB
+# Генерация ChromaDB
 result = await rag_client.generate_chroma_db()
 
-# Chat
-result = await rag_client.chat("Your question here")
+# Чат
+result = await rag_client.chat("Ваш вопрос здесь")
 ```
 
 ### MinioClient
 
-File storage operations:
+Операции с хранилищем файлов:
 
 ```python
 from minio_client import upload_file, list_files, delete_file, get_bucket_name
 
-bucket_name = get_bucket_name("username")  # Returns "user-username"
+bucket_name = get_bucket_name("username")  # Возвращает "user-username"
 
-# Upload
+# Загрузка
 upload_file(bucket_name, "file.pdf", file_bytes)
 
-# List
+# Список
 files = list_files(bucket_name)
 
-# Delete
+# Удаление
 delete_file(bucket_name, "file.pdf")
 ```
 
-## 🔐 Security
+## 🔐 Безопасность
 
-### JWT Authentication
+### JWT аутентификация
 
-- Tokens are stored in session state and query params
-- Automatic token validation on each request
-- Token expiration: 1 hour
-- Secure password hashing with bcrypt
+- Токены хранятся в session state и query params
+- Автоматическая валидация токена при каждом запросе
+- Срок действия токена: 1 час
+- Безопасное хеширование паролей с bcrypt
 
-### User Isolation
+### Изоляция пользователей
 
-- Each user has isolated bucket in Minio
-- User ID format: `user-{username}`
-- Database queries filtered by user
+- Каждый пользователь имеет изолированный бакет в Minio
+- Формат user_id: `user-{username}`
+- Запросы к базе данных фильтруются по пользователю
 
-### Input Validation
+### Валидация ввода
 
-- File type validation
-- Password strength requirements
-- Username uniqueness check
+- Валидация типа файлов
+- Требования к сложности пароля
+- Проверка уникальности имени пользователя
 
-## 🧪 Testing
+## 🧪 Тестирование
 
-### Run Tests
+### Запуск тестов
 
 ```bash
-# Authentication tests
+# Тесты аутентификации
 python test_auth.py
 ```
 
-### Manual Testing
+### Ручное тестирование
 
-1. **Registration Flow:**
-   - Register new user
-   - Verify user created in database
-   - Login with credentials
+1. **Сценарий регистрации:**
+   - Зарегистрируйте нового пользователя
+   - Проверьте создание пользователя в базе данных
+   - Войдите с учётными данными
 
-2. **File Upload:**
-   - Upload test PDF/TXT file
-   - Verify file in Minio console
-   - Check ChromaDB generation
+2. **Загрузка файлов:**
+   - Загрузите тестовый PDF/TXT файл
+   - Проверьте файл в консоли Minio
+   - Проверьте генерацию ChromaDB
 
-3. **Chat:**
-   - Ask question about uploaded document
-   - Verify response accuracy
-   - Test conversation history
+3. **Чат:**
+   - Задайте вопрос по загруженному документу
+   - Проверьте точность ответа
+   - Протестируйте историю разговора
 
-## 🐛 Troubleshooting
+## 🐛 Решение проблем
 
-### Database Connection Error
+### Ошибка подключения к базе данных
 
 ```bash
-# Check PostgreSQL is running
+# Проверьте, работает ли PostgreSQL
 docker-compose ps postgres
 
-# Verify DATABASE_URL
+# Проверьте DATABASE_URL
 echo $DATABASE_URL
 
-# Test connection
+# Проверьте подключение
 docker exec -it postgres_db psql -U user -d bookdb
 ```
 
-### RAG Service Unavailable
+### RAG Service недоступен
 
 ```bash
-# Check RAG service status
+# Проверьте статус RAG сервиса
 docker-compose ps rag_service
 
-# View RAG logs
+# Просмотрите логи RAG
 docker-compose logs rag_service
 
-# Test API directly
+# Проверьте API напрямую
 curl http://localhost:8000/api/rag
 ```
 
-### Minio Connection Error
+### Ошибка подключения к Minio
 
 ```bash
-# Check Minio status
+# Проверьте статус Minio
 docker-compose ps minio
 
-# Access Minio console
+# Откройте консоль Minio
 # http://localhost:9001
 
-# Verify credentials
+# Проверьте учётные данные
 ```
 
-### JWT Token Expired
+### Истёк срок действия JWT-токена
 
-- Token expires after 1 hour
-- Logout and login again
-- Token automatically refreshed on login
+- Токен истекает через 1 час
+- Выйдите и войдите снова
+- Токен автоматически обновляется при входе
 
-### Session Lost on Refresh
+### Сессия потеряна при перезагрузке
 
-- Check query params are preserved
-- Verify JWT_SECRET_KEY is consistent
-- Clear browser cache and try again
+- Проверьте сохранение query params
+- Убедитесь, что JWT_SECRET_KEY постоянен
+- Очистите кэш браузера и попробуйте снова
 
-## 📊 Performance
+## 📊 Производительность
 
-| Operation | Average Time |
-|-----------|-------------|
-| User Registration | < 1 sec |
-| User Login | < 1 sec |
-| File Upload (10 MB) | 2-5 sec |
-| ChromaDB Generation | 30-60 sec |
-| Chat Response | 3-10 sec |
+| Операция | Среднее время |
+|----------|---------------|
+| Регистрация пользователя | < 1 сек |
+| Вход пользователя | < 1 сек |
+| Загрузка файла (10 МБ) | 2-5 сек |
+| Генерация ChromaDB | 30-60 сек |
+| Ответ чата | 3-10 сек |
 
-## 🔄 Session Management
+## 🔄 Управление сессией
 
 ### Session State
 
@@ -381,29 +383,29 @@ docker-compose ps minio
 st.session_state["authenticated"] = True
 st.session_state["username"] = "username"
 st.session_state["user_id"] = "user-username"
-st.session_state["jwt_token"] = "jwt-token"
-st.session_state["messages"] = [...]  # Chat history
+st.session_state["jwt_token"] = "jwt-токен"
+st.session_state["messages"] = [...]  # История чата
 ```
 
 ### Query Params
 
-Session persists across page reloads via query params:
+Сессия сохраняется при перезагрузке страницы через query params:
 ```
 ?jwt_token=xxx&username=xxx&user_id=xxx
 ```
 
-## 🤝 Integration with RAG Service
+## 🤝 Интеграция с RAG Service
 
-### API Endpoints Used
+### Используемые API эндпоинты
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/upload_books` | POST | Upload documents |
-| `/generate_chroma_db` | POST | Generate vector DB |
-| `/chat` | GET | Chat with documents |
-| `/clear_history` | POST | Clear chat history |
+| Эндпоинт | Метод | Описание |
+|----------|-------|----------|
+| `/upload_books` | POST | Загрузка документов |
+| `/generate_chroma_db` | POST | Генерация векторной БД |
+| `/chat` | GET | Чат с документами |
+| `/clear_history` | POST | Очистка истории чата |
 
-### Error Handling
+### Обработка ошибок
 
 ```python
 try:
@@ -416,9 +418,9 @@ except Exception as e:
     })
 ```
 
-## 📝 Code Examples
+## 📝 Примеры кода
 
-### User Registration
+### Регистрация пользователя
 
 ```python
 from database import add_user
@@ -430,7 +432,7 @@ else:
     st.error("Пользователь уже существует")
 ```
 
-### File Upload
+### Загрузка файлов
 
 ```python
 from minio_client import create_bucket_if_not_exists, upload_file
@@ -442,41 +444,41 @@ for file in uploaded_files:
     upload_file(bucket_name, file.name, file.getvalue())
 ```
 
-### Chat with RAG
+### Чат с RAG
 
 ```python
 from rag_client import RAGClient
 
 rag_client = RAGClient(jwt_token, user_id)
-result = await rag_client.chat("What is the main theme?")
+result = await rag_client.chat("В чём основная тема?")
 st.write(result.text)
 ```
 
-## 🛠️ Development
+## 🛠️ Разработка
 
-### Local Development
+### Локальная разработка
 
 ```bash
-# Install dependencies
+# Установка зависимостей
 uv sync
 
-# Run with auto-reload
+# Запуск с автоперезагрузкой
 streamlit run main.py --server.head true
 
-# Run on specific port
+# Запуск на определённом порту
 streamlit run main.py --server.port 8501
 ```
 
-### Docker Development
+### Docker разработка
 
 ```bash
-# Build image
+# Сборка образа
 docker build -t streamlit-service .
 
-# Run container
+# Запуск контейнера
 docker run -p 8501:8501 --env-file .env streamlit-service
 ```
 
-## 📄 License
+## 📄 Лицензия
 
 MIT License
