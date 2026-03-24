@@ -478,7 +478,3 @@ docker build -t streamlit-service .
 # Запуск контейнера
 docker run -p 8501:8501 --env-file .env streamlit-service
 ```
-
-## 📄 Лицензия
-
-MIT License

@@ -368,7 +368,3 @@ docker-compose logs ollama
 3. Закоммитьте изменения (`git commit -m 'Add amazing feature'`)
 4. Отправьте в удалённый репозиторий (`git push origin feature/amazing-feature`)
 5. Откройте Pull Request
-
-## 📄 Лицензия
-
-MIT License

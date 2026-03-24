@@ -403,10 +403,6 @@ docker-compose ps minio
 4. Отправьте в удалённый репозиторий (`git push origin feature/amazing-feature`)
 5. Откройте Pull Request
 
-## 📄 Лицензия
-
-MIT License
-
 ## 🙏 Благодарности
 
 - [FastAPI](https://fastapi.tiangolo.com/) — Современный веб-фреймворк Python
