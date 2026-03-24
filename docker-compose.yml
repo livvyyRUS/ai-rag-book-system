@@ -100,11 +100,6 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-  telegram_bot:
-    build: telegram_bot
-    environment:
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      TELEGRAM_API_TOKEN: ${TELEGRAM_API_TOKEN}
   streamlit_service:
     build: streamlit_service
     ports:
