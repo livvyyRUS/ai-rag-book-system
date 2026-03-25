@@ -8,7 +8,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from chromadb.config import Settings as ChromaSettings
 from .files import Files
 
@@ -92,19 +92,19 @@ class RAG:
         print("Создание векторной базы данных...")
 
         def _create_db():
-            # Explicitly set ChromaDB settings for persistence
-            chroma_settings = ChromaSettings(
+            # Создаем директорию для persistence, если не существует
+            self.chromadb_directory.mkdir(parents=True, exist_ok=True)
+            
+            # Создаем векторную базу с автосохранением
+            vectordb = Chroma.from_documents(
+                documents=chunks,
+                embedding=embeddings,
                 persist_directory=str(self.chromadb_directory),
-                anonymized_telemetry=False,
-                allow_reset=True,
+                client_settings=ChromaSettings(
+                    anonymized_telemetry=False,
+                    allow_reset=True,
+                )
             )
-            vectordb = Chroma(
-                client_settings=chroma_settings,
-                persist_directory=str(self.chromadb_directory),
-                embedding_function=embeddings,
-            )
-            vectordb.add_documents(chunks)
-            vectordb.persist()
             return vectordb
 
         await asyncio.to_thread(_create_db)
@@ -123,13 +123,15 @@ class RAG:
         await self.generate_vectors(chunks)
 
     async def _get_vectordb(self) -> Chroma:
-        """Возвращает загруженное векторное хранилище (синхронно, обёрнуто в to_thread)."""
+        """Возвращает загруженное векторное хранилище."""
         def _load_vectordb():
-            # Используем from_documents с пустым списком для загрузки существующей БД
-            # Это гарантирует, что мы получим свежие данные из persist_directory
             return Chroma(
-                persist_directory=str(self.chromadb_directory),
                 embedding_function=embeddings,
+                persist_directory=str(self.chromadb_directory),
+                client_settings=ChromaSettings(
+                    anonymized_telemetry=False,
+                    allow_reset=True,
+                )
             )
         return await asyncio.to_thread(_load_vectordb)
 
@@ -156,7 +158,6 @@ class RAG:
         docs = await asyncio.to_thread(
             vectordb.similarity_search, query, k=k, filter=filter
         )
-        print(docs)
         return docs
 
     async def similarity_search_with_scores(
@@ -179,7 +180,6 @@ class RAG:
         docs_with_scores = await asyncio.to_thread(
             vectordb.similarity_search_with_score, query, k=k, filter=filter
         )
-        print(docs_with_scores)
         return docs_with_scores
 
     async def similarity_search_with_mmr(
@@ -212,7 +212,7 @@ class RAG:
             lambda_mult=lambda_mult,
             filter=filter,
         )
-        print(docs)
+        # Убрали логирование документов, чтобы не засорять лог
         return docs
 
     async def close(self):
