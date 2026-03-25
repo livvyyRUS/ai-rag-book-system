@@ -250,7 +250,7 @@ class TalkAgent:
         try:
             # Создаем промпт вручную
             messages = _create_prompt(query, str(found), fragments_text, history)
-            
+
             # Вызываем LLM
             response: AIMessage = await llm.ainvoke(messages)
             print(f"💬 TalkAgent: {response.content[:100]}...")

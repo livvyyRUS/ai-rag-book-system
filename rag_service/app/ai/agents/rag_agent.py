@@ -3,7 +3,9 @@ from langchain.messages import HumanMessage, SystemMessage
 from langchain.agents import create_agent
 from app.ai.llm import llm
 from app.ai.tools.rag_tool import create_rag_tool
+from app.ai.prompt_rewriter import get_prompt_rewriter
 import json
+import re
 
 
 SYSTEM_PROMPT = """You are a document search extractor. Your ONLY job: search user documents and return results as JSON.
@@ -16,21 +18,6 @@ SYSTEM_PROMPT = """You are a document search extractor. Your ONLY job: search us
 - Extract ONLY what exists in the search results - word for word
 - Do NOT guess, assume, or fill in missing information
 - Copy book titles, locations, and text EXACTLY as they appear in search results
-
-## QUERY OPTIMIZATION (IMPORTANT)
-Before calling rag_search, OPTIMIZE the user's query for better search results:
-1. Extract key entities: names, places, events, objects
-2. Remove filler words: "кто", "что", "где", "найди", "опиши", "расскажи"
-3. For questions about characters → search for character names and key descriptions
-4. For questions about events → search for event names and related terms
-5. For "сон" (dream) queries → include keywords like "сон", "снился", "видел во сне"
-6. Use synonyms and related terms from the query context
-
-Examples of query optimization:
-- "Кто такой Раскольников?" → "Раскольников бывший студент описание"
-- "Где описывается сон Раскольникова о лошади?" → "сон Раскольников лошадь избитие"
-- "Что делала Катерина в саду?" → "Катерина сад прогулка"
-- "Найди описание грозы в пьесе" → "гроза гром молния погода"
 
 ## OUTPUT FORMAT (MANDATORY)
 Your final response MUST be a valid JSON object with this exact structure:
@@ -48,8 +35,8 @@ Your final response MUST be a valid JSON object with this exact structure:
 }
 
 ## WORKFLOW
-1. Analyze the user query and extract key search terms
-2. Call the `rag_search` tool ONCE with the OPTIMIZED query (max 1 call)
+1. You will receive an OPTIMIZED query (already rewritten for better search)
+2. Call the `rag_search` tool ONCE with the provided optimized query (max 1 call)
 3. Parse the search results EXACTLY as they appear
 4. Extract each fragment into the JSON structure above
 5. Return ONLY the JSON object - nothing else
@@ -73,7 +60,7 @@ Extract each fragment EXACTLY:
 ## EXAMPLES
 
 User: "Who is Raskolnikov?"
-Optimized query: "Раскольников бывший студент описание"
+Optimized query: "Раскольников Родион характеристика описание студент главный герой"
 rag_search returns: "[#1] Преступление и наказание (стр. 15)\nРодион Раскольников — бывший студент..."
 
 Your response:
@@ -92,7 +79,7 @@ Your response:
 - Do not return a list, string, or any other type - ONLY a dict/object
 - Make EXACTLY 1 rag_search call, not more
 - Copy all text EXACTLY from search results - DO NOT modify, correct, or improve anything
-- ALWAYS optimize the query before searching - extract keywords, remove filler words
+- Use the optimized query provided in the user message - DO NOT modify it further
 """
 
 
@@ -102,6 +89,7 @@ class RAGAgent:
     def __init__(self, user_id: str):
         self.user_id = user_id
         self.tools = [create_rag_tool(user_id)]
+        self.prompt_rewriter = get_prompt_rewriter()
 
         self.agent = create_agent(
             model=llm.bind_tools(self.tools),
@@ -109,10 +97,65 @@ class RAGAgent:
             system_prompt=SYSTEM_PROMPT
         )
 
+    async def _parse_search_results(self, search_output: str) -> list:
+        """Парсит результаты поиска из формата rag_search в список фрагментов."""
+        fragments = []
+
+        if not search_output or search_output == "Релевантных документов не найдено.":
+            return fragments
+
+        # Разбиваем по разделителям фрагментов
+        fragment_pattern = r'\[#(\d+)\]\s*(.+?)\s*\(стр\.?\s*(\d+)\)\n(.*?)(?=\n-{20,}|\n\n\[#|\Z)'
+
+        matches = re.findall(fragment_pattern, search_output, re.DOTALL)
+
+        for match in matches:
+            try:
+                fragment_num, book_title, page_num, text_content = match
+                fragments.append({
+                    "book": book_title.strip(),
+                    "location": f"стр. {page_num.strip()}",
+                    "text": text_content.strip()
+                })
+            except (ValueError, IndexError) as e:
+                print(f"⚠️ Ошибка парсинга фрагмента: {e}")
+                continue
+
+        # Если regex не сработал, пробуем альтернативный метод
+        if not fragments:
+            # Разбиваем по разделителям
+            raw_fragments = re.split(r'\n-{20,}\n\n', search_output)
+
+            for raw_frag in raw_fragments:
+                raw_frag = raw_frag.strip()
+                if not raw_frag:
+                    continue
+
+                lines = raw_frag.split('\n', 2)
+                if len(lines) >= 2:
+                    # Первая строка: [#N] Book Title (стр. X)
+                    header_match = re.match(r'\[#\d+\]\s*(.+?)\s*\(стр\.?\s*(\d+)\)', lines[0])
+                    if header_match:
+                        book_title = header_match.group(1).strip()
+                        page_num = header_match.group(2).strip()
+                        text_content = lines[1].strip() if len(lines) > 1 else ""
+
+                        fragments.append({
+                            "book": book_title,
+                            "location": f"стр. {page_num}",
+                            "text": text_content
+                        })
+
+        return fragments
+
     async def message(self, query: str) -> Dict[str, Any]:
         """Обработка вопроса пользователя. Возвращает JSON с результатами поиска."""
+        # Шаг 1: Переписываем промпт для улучшения поиска
+        optimized_query = await self.prompt_rewriter.rewrite(query)
+
+        # Шаг 2: Запускаем агента с оптимизированным запросом
         result: Dict[str, Any] = await self.agent.ainvoke({
-            "messages": [HumanMessage(content=query)]
+            "messages": [HumanMessage(content=f"Original query: {query}\nOptimized query: {optimized_query}")]
         })
 
         messages = result["messages"]
@@ -134,17 +177,32 @@ class RAGAgent:
             if not isinstance(parsed, dict):
                 print(f"🤖RAG: unexpected response type: {type(parsed).__name__}")
                 print(f"Получен ответ: {response[:200]}")
+                # Пытаемся спарсить результаты напрямую из ответа
+                fragments = await self._parse_search_results(response)
                 return {
                     "query": query,
-                    "found": False,
-                    "fragments": []
+                    "found": len(fragments) > 0,
+                    "fragments": fragments
                 }
+
+            # Если found не установлен, но есть фрагменты - устанавливаем true
+            if 'found' not in parsed or parsed['found'] is None:
+                parsed['found'] = len(parsed.get('fragments', [])) > 0
 
             print(f"🤖RAG: found={parsed.get('found')}, fragments={len(parsed.get('fragments', []))}")
             return parsed
         except (json.JSONDecodeError, KeyError) as e:
             print(f"Ошибка парсинга JSON от RAG-агента: {e}")
             print(f"Получен ответ: {response[:200]}")
+            # Пытаемся извлечь фрагменты напрямую из ответа
+            fragments = await self._parse_search_results(response)
+            if fragments:
+                print(f"🤖RAG: parsed {len(fragments)} fragments from raw response")
+                return {
+                    "query": query,
+                    "found": True,
+                    "fragments": fragments
+                }
             # Возвращаем пустой результат при ошибке
             return {
                 "query": query,

@@ -158,7 +158,6 @@ class RAG:
         docs = await asyncio.to_thread(
             vectordb.similarity_search, query, k=k, filter=filter
         )
-        print(docs)
         return docs
 
     async def similarity_search_with_scores(
@@ -181,7 +180,6 @@ class RAG:
         docs_with_scores = await asyncio.to_thread(
             vectordb.similarity_search_with_score, query, k=k, filter=filter
         )
-        print(docs_with_scores)
         return docs_with_scores
 
     async def similarity_search_with_mmr(
@@ -214,7 +212,7 @@ class RAG:
             lambda_mult=lambda_mult,
             filter=filter,
         )
-        print(docs)
+        # Убрали логирование документов, чтобы не засорять лог
         return docs
 
     async def close(self):
